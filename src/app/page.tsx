@@ -18,8 +18,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState } from "react";
+import Image from "next/image";
 
-// Font Inter từ Next.js
 const inter = Inter({ subsets: ["latin"] });
 
 // Định nghĩa type cho Task
@@ -28,26 +28,49 @@ interface Task {
   points: number;
 }
 
+// Định nghĩa type cho Result (sẽ mở rộng sau khi có AI)
+interface Result {
+  message: string;
+}
+
 // Danh sách công việc cố định
 const predefinedTasks: Task[] = [
-  { name: "Play Sports", points: 1 },
+  { name: "Play soccer", points: 1 },
+  { name: "Play badminton", points: 1 },
   { name: "Wash Dishes", points: 1 },
-  { name: "Team Meeting", points: 2 },
 ];
 
 export default function Home() {
-  // State với type rõ ràng
+  // State cho task selection
   const [selectedTask, setSelectedTask] = useState<string>("");
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  // Hàm xử lý khi thêm task
+  // State cho photo upload
+  const [photo, setPhoto] = useState<string | null>(null);
+
+  // State cho result
+  const [result, setResult] = useState<Result | null>(null);
+
+  // Hàm xử lý thêm task
   const handleAddTask = (): void => {
     if (selectedTask) {
       const task = predefinedTasks.find((t) => t.name === selectedTask);
       if (task) {
         setTasks((prevTasks) => [...prevTasks, task]);
-        setSelectedTask(""); // Reset dropdown
+        setSelectedTask("");
       }
+    }
+  };
+
+  // Hàm xử lý upload ảnh
+  const handlePhotoUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ): void => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const photoURL = URL.createObjectURL(file);
+      setPhoto(photoURL);
+      setResult({ message: "Processing..." });
     }
   };
 
@@ -103,6 +126,45 @@ export default function Home() {
             )}
           </TableBody>
         </Table>
+
+        {/* Upload ảnh */}
+        <div className="space-y-4">
+          <label
+            htmlFor="photo-upload"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Upload Photo Proof
+          </label>
+          <input
+            id="photo-upload"
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          {photo && (
+            <div className="mt-4">
+              <Image
+                src={photo}
+                alt="Uploaded photo preview"
+                width={300}
+                height={300}
+                className="rounded-md object-cover"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-gray-800">Result</h2>
+          <div className="p-4 bg-white rounded-md shadow-sm border border-gray-200">
+            {result ? (
+              <p className="text-gray-700">{result.message}</p>
+            ) : (
+              <p className="text-gray-500">Upload a photo to see the result</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
